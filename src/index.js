@@ -13,6 +13,7 @@ const client = new CommandoClient({
 client.registry
     .registerDefaultTypes()
     .registerGroups([
+        ['behavior', 'Commands to manipulate behaviors.'],
         ['test', 'Test commands!']
     ])
     .registerDefaultGroups()
