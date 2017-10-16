@@ -1,7 +1,7 @@
 'use strict';
 
 const { Command } = require('discord.js-commando');
-const { head, tail, get, set } = require('lodash');
+const Behavior = require('../../behaviors/Behavior');
 
 module.exports = class AddBehavior extends Command {
     constructor(client) {
@@ -16,26 +16,30 @@ module.exports = class AddBehavior extends Command {
     }
 
     run(message, args) {
-        var behaviorName = head(args);
-        var behaviorArgs = tail(args);
-        var BehaviorClass = require('../../behaviors/' + behaviorName);
+        let behaviorName = args[0] || '';
+        let behaviorArgs = args.slice(1);
+        let BehaviorClass = this.client.registry.behaviors[behaviorName];
 
-        var channel = message.channel;
-        var guild = channel.guild;
+        let channel = message.channel;
+        if (!BehaviorClass || !BehaviorClass instanceof Behavior) {
+            channel.send('The behavior `' + behaviorName + '` could not be found.');
+            return;
+        }
+
+        let guild = channel.guild;
         if (!guild.behaviors) {
             guild.behaviors = {};
         }
 
-        var behaviors = guild.behaviors;
-        var behavior = get(behaviors, behaviorName);
+        let behaviors = guild.behaviors;
+        let behavior = behaviors[behaviorName];
         if (behavior) {
             channel.send('The behavior `' + behaviorName + '` is already active on this guild.');
-        } else if (behaviorName !== 'Behavior' && BehaviorClass) {
+        } else {
             behavior = new BehaviorClass(this.client, guild, behaviorArgs);
             behavior.start();
-            set(behaviors, behaviorName, behavior);
-        } else {
-            channel.send('The behavior `' + behaviorName + '` could not be found.');
+            behaviors[behaviorName] = behavior;
+            channel.send('The behavior `' + behaviorName + '` has been activated on this guild.');
         }
     }
 }

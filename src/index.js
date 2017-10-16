@@ -11,14 +11,16 @@ const client = new CommandoClient({
 });
 
 client.registry
-    .registerDefaultTypes()
+    .registerDefaults()
     .registerGroups([
         ['behavior', 'Commands to manipulate behaviors.'],
         ['test', 'Test commands!']
     ])
-    .registerDefaultGroups()
-    .registerDefaultCommands()
     .registerCommandsIn(path.join(__dirname, 'commands'));
+
+client.registry.behaviors = {
+    test: require('./behaviors/Test')
+}
 
 client.on('ready', () => {
     console.log('I am ready!');

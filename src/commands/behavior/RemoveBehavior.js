@@ -1,7 +1,6 @@
 'use strict';
 
 const { Command } = require('discord.js-commando');
-const { get, unset } = require('lodash');
 
 module.exports = class RemoveBehavior extends Command {
     constructor(client) {
@@ -15,12 +14,13 @@ module.exports = class RemoveBehavior extends Command {
     }
 
     run(message, behaviorName) {
-        var channel = message.channel;
-        var behaviors = channel.guild.behaviors;
-        var behavior = get(behaviors, behaviorName);
+        let channel = message.channel;
+        let behaviors = channel.guild.behaviors;
+        let behavior = behaviors[behaviorName];
         if (behavior) {
             behavior.stop();
-            unset(behaviors, behaviorName);
+            delete behaviors[behaviorName];
+            channel.send('The behavior `' + behaviorName + '` has been deactivated on this guild.');
         } else {
             channel.send('The behavior `' + behaviorName + '` has not been activated on this guild.');
         }
