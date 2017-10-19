@@ -36,7 +36,7 @@ module.exports = class AddBehavior extends Command {
         if (behavior) {
             channel.send('The behavior `' + behaviorName + '` is already active on this guild.');
         } else {
-            behavior = new BehaviorClass(this.client, guild, behaviorArgs);
+            behavior = new BehaviorClass(this.client, guild.id, behaviorArgs);
             behavior.start();
             behaviors[behaviorName] = behavior;
             channel.send('The behavior `' + behaviorName + '` has been activated on this guild.');

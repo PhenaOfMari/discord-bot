@@ -1,15 +1,20 @@
 'use strict';
 
-const VALIDATION = {
-    message: function(message) {
-        return message.channel.guild === this.guild;
-    }
-}
+const {
+    Channel,
+    Collection,
+    Emoji,
+    Guild,
+    GuildMember,
+    Message,
+    MessageReaction,
+    Role
+} = require('discord.js');
 
 module.exports = class Behavior {
-    constructor(client, guild, options) {
+    constructor(client, guildId, options) {
         Object.defineProperty(this, 'client', { value: client });
-        Object.defineProperty(this, 'guild', { value: guild });
+        Object.defineProperty(this, 'guildId', { value: guildId });
 
         this.name = options.name;
 
@@ -21,8 +26,7 @@ module.exports = class Behavior {
         let eventName = eventPair[0];
         let listener = eventPair[1];
         return [eventName, (...args) => {
-            let isValid = VALIDATION[eventName] || function() { return true; };
-            if (isValid.apply(this, args)) {
+            if (isWithinGuild(this.guildId, ...args)) {
                 listener(...args);
             }
         }]
@@ -39,4 +43,33 @@ module.exports = class Behavior {
             this.client.removeListener(...listenerPair);
         })
     }
-}
+};
+
+function isWithinGuild(guildId, firstArg) {
+    let eventGuildId;
+    if (firstArg) {
+        let arg = firstArg;
+        if (arg instanceof Collection) {
+            arg = arg.first();
+        }
+        if (arg instanceof Array) {
+            arg = arg[0];
+        }
+        if (arg instanceof MessageReaction) {
+            arg = arg.message;
+        }
+        if (isInstanceOf(arg, Channel, Emoji, GuildMember, Message, Role)) {
+            arg = arg.guild;
+        }
+        if (arg instanceof Guild) {
+            eventGuildId = arg.id;
+        }
+    }
+    return guildId === eventGuildId;
+};
+
+function isInstanceOf(object, ...classes) {
+    return classes.some(classType => {
+        return object instanceof classType;
+    });
+};
